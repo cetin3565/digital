@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Digital Saat</title>
+
+<link href="https://db.onlinewebfonts.com/c/cb7f7c4508b78f2142f2ee3c2e695230?family=Digital+Clock" rel="stylesheet">
+
+<link href="https://db.onlinewebfonts.com/c/85fad98aba7b0c34791b663ebc88cb42?family=DS-Digital-Bold" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+
+         html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            overflow: hidden;
+            font-family: sans-serif;
+      
+        }
+
+       .container {
+            width: 96vw;
+            justify-content:center;
+            margin: auto;
+            opacity:0.2
+       }
+        
+         
+      .gece {
+
+            opacity:0.1
+       }
+         
+         .info-container, .clock-container {
+            color: #999999;
+          
+          
+            display: flex;
+            align-items: center;
+           
+         }
+        
+        .info-container {
+            width: 100%;
+            height: 25vh; /* Ekran yüksekliğinin %30'u */
+            /*background-color: #3498db;  Görsel olarak ayırt etmek için renk */
+            /* Font boyutunu div yüksekliğine oranlıyoruz */
+            font-size: 25vh; 
+            color:#e37830;
+            display: flex;
+            justify-content: space-between; /* Soldakini sola, sağdakini sağa iter, ortada boşluk bırakır */
+         
+        }
+
+/*onlinewebfonts.com/download/85fad98aba7b0c34791b663ebc88cb42 */
+
+        .clock-container {
+            width: 100%;
+            height: 75vh; /* Ekran yüksekliğinin %70'i */
+            /*background-color: #2ecc71;  Görsel olarak ayırt etmek için renk */
+            /* Font boyutunu div yüksekliğine oranlıyoruz */
+            font-size: 90vh; 
+            justify-content: center;
+             font-family: "Digital Clock";
+              font-family: "DS-Digital-Bold";
+              
+        }
+        
+
+             /* gunduz  */
+.themegun .info-container {color: #ff6519;}
+.themegun .clock-container {color: #b2ff19; }     
+       
+.themegece .info-container {color: #EB3815;}
+.themegece .clock-container {color: #888888; }
+
+
+
+      .icon-box  {
+            display: flex;
+            align-items: center;
+            height:25vh;
+           
+            
+        }      
+      
+   .icon-box img {
+           
+            height:100%;
+            display: block;
+      
+        }     
+        
+        
+        
+        
+                    /* Blinking colon animation */
+    .blink {
+      animation: blinker 1s cubic-bezier(0.5, 0, 1, 1) infinite;
+    }
+
+    @keyframes blinker {
+      50% {
+        opacity: 0.2;
+      }
+    }
+        
+        
+        
+    </style>
+</head>
+<body>
+
+   <div id='clkcont' class="container">
+       
+       
+       
+   <div class="info-container ">
+     <div class="tarih-box">
+        <span id="tarih"></span>
+    </div>
+    
+    <div class="icon-box">
+     
+        <img id="weather-icon" src="" alt="Hava Durumu Simgesi" style="display:none;">
+           <span id="hava"></span>
+    </div>
+       
+       
+
+   </div>
+   
+   
+   
+   <div  class="clock-container">
+         
+            <span id="hour">00</span>
+            <span class="blink">:</span>
+            <span id="minutes">00</span>
+    </div>
+         
+</div>       
+         
+      <script>
+ const now = new Date();
+ 
+  function updateTimeDate() {
+   
+    const hoursNum = now.getHours(); // Sayısal saat (0 - 23 arası)
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+  
+                // Gün ve Ay bilgileri
+   const day = String(now.getDate()).padStart(2, '0'); // Ayın günü (01-31)
+   const month = String(now.getMonth() + 1).padStart(2, '0');
+      // Türkçe ay ismini almak için (Örn: "Ekim")
+   const monthName = now.toLocaleString('tr-TR', { month: 'long' });
+
+   document.getElementById('tarih').innerText = `${day}/${monthName} `;
+
+   
+    // Görüntü için iki haneli format (Örn: "08")
+    const hoursStr = String(hoursNum).padStart(2, '0');
+    
+    // DOM'a saat ve dakikayı yazdırma
+    document.getElementById('hour').innerText = `${hoursStr}`;
+    document.getElementById('minutes').innerText = `${minutes}`;
+    
+    // Saat rengini zamana göre değiştirme
+   
+    const clkcont =document.getElementById('clkcont');
+    // Saat 11:00 ile 23:00 arasında ise gun, değilse gece yapar
+    if (hoursNum >= 11 && hoursNum < 24) {
+         clkcont.classList.remove('gece');// opacity
+        clkcont.classList.add('themegun');
+        clkcont.classList.remove('themegece');
+        
+    } else {
+
+         clkcont.classList.add('gece');// opacity
+         clkcont.classList.add('themegece');
+         clkcont.classList.remove('themegun');
+    }
+}
+
+          // Her saniye saati güncelle
+        setInterval(updateTimeDate, 1000);
+        
+        // Sayfa açılır açılmaz gecikmesiz göster
+        updateTimeDate();
+    
+
+        const lat = 38.3889; // Enlem
+        const lon = 27.1722; // Boylam
+        
+        // 2. HAVA DURUMU (Sadece Derece)
+   async function fetchWeather() {
+        // Open-Meteo API URL (Sıcaklık, hava durumu kodu ve gece/gündüz bilgisi çeker)
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day,relative_humidity_2m,rain,apparent_temperature&timezone=auto`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const temp = Math.round(data.current.temperature_2m);
+            const code = data.current.weather_code;
+            const isDay = data.current.is_day; // 1 = Gündüz, 0 = Gece
+console.log(data);
+            // Sıcaklığı yazdır
+            document.getElementById('hava').innerText = `${temp}°`;
+
+            // Görseldeki gibi açık/net ikonlar (OpenWeatherMap CDN SVG ikonları)
+            let iconCode = '01d';
+
+            if (code === 0) {
+                // Açık hava (Gündüz Güneş, Gece Hilal/Ay)
+                iconCode = isDay ? '01d' : '01n';
+            } else if (code >= 1 && code <= 3) {
+                // Parçalı Bulutlu
+                iconCode = isDay ? '02d' : '02n';
+            } else if (code >= 45 && code <= 48) {
+                // Sisli
+                iconCode = '50d';
+            } else if (code >= 51 && code <= 67) {
+                // Yağmurlu
+                iconCode = '10d';
+            } else if (code >= 71 && code <= 77) {
+                // Karlı
+                iconCode = '13d';
+            } else if (code >= 80 && code <= 82) {
+                // Sağanak
+                iconCode = '09d';
+            } 
+           //else if (code >= 95) {
+                // Fırtınalı
+             //   iconCode = '11d';
+           // }
+            else  {
+                // Fırtınalı
+                iconCode = 'temp';
+            }
+   
+            
+            const iconImg = document.getElementById('weather-icon');
+            iconImg.src = `src/${iconCode}.png`;
+            iconImg.style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('hava').innerText = "!";
+                console.error("Hata:", error);
+            }
+        }
+
+        fetchWeather();
+        setInterval(fetchWeather, 30 * 60 * 1000); // 30 dakikada 1
+        
+    </script>       
+         
+         
+         
+</body>
+</html>
